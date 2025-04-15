@@ -1,21 +1,81 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Friedrich AI-Concierge</title>
-  <style>
-    body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
-    input, button { padding: 0.5rem; font-size: 1rem; width: 100%; margin-top: 1rem; }
-    #responseBox { margin-top: 2rem; background: #f5f5f5; padding: 1rem; border-radius: 0.5rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friedrich – AI Concierge</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Friedrich fragt zurück</h1>
-  <input id="userInput" type="text" placeholder="Frag etwas über den Wanderer über dem Nebelmeer…" />
-  <button id="sendButton">Frage stellen</button>
-  <div id="responseBox">Antwort erscheint hier…</div>
-  <script type="module" src="script.js"></script>
+    <header>
+        <img src="logo.png" alt="Logo" class="logo">
+        <h1>Friedrich – Ihr AI Concierge</h1>
+    </header>
+
+    <main>
+        <div class="chatbox">
+            <div id="chat-output"></div>
+            <div class="input-row">
+                <input type="text" id="user-input" placeholder="Frage zu Friedrich stellen…">
+                <button onclick="sendMessage()">Senden</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Kunsthalle Projekt · Prototyp</p>
+    </footer>
+
+    <script>
+        const API_KEY = "DEIN_API_KEY_HIER"; // Hier bitte deinen echten OpenAI Key einsetzen
+
+        async function sendMessage() {
+            const inputField = document.getElementById("user-input");
+            const outputDiv = document.getElementById("chat-output");
+            const userMessage = inputField.value.trim();
+
+            if (!userMessage) return;
+
+            // Nutzerfrage anzeigen
+            outputDiv.innerHTML += `<div class='user'><strong>Du:</strong> ${userMessage}</div>`;
+            inputField.value = "";
+
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${API_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "Du bist Friedrich, ein AI Concierge einer Kunsthalle. Antworte sachlich, aber charmant auf Fragen zu Kunstwerken. Sprich Deutsch."
+                            },
+                            {
+                                role: "user",
+                                content: userMessage
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    outputDiv.innerHTML += `<div class='ai'><strong>Friedrich:</strong> ${data.choices[0].message.content}</div>`;
+                } else {
+                    outputDiv.innerHTML += `<div class='error'>Fehler: Keine gültige Antwort erhalten.</div>`;
+                }
+
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+
+            } catch (error) {
+                outputDiv.innerHTML += `<div class='error'>Ein Fehler ist aufgetreten: ${error.message}</div>`;
+            }
+        }
+    </script>
 </body>
 </html>
